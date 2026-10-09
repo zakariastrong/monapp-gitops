@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monapp
+spec:
+  replicas: 4
+  selector:
+    matchLabels: { app: monapp }
+  template:
+    metadata:
+      labels: { app: monapp }
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+      containers:
+        - name: monapp
+          image: ghcr.io/zakariastrong/monapp:1.0.0
+          ports: [{ name: http, containerPort: 8000 }]
+          readinessProbe: { httpGet: { path: /health, port: http } }
+          livenessProbe: { httpGet: { path: /health, port: http } }
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { memory: 256Mi }
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: { drop: ["ALL"] }
